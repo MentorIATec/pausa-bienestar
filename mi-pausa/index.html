@@ -1,1 +1,44 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi pausa · Pausa de bienestar</title><meta name="description" content="Una pausa breve para reconocer tus emociones, necesidades y elegir una acción."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../styles.css"><script src="./app.js" defer></script></head><body><header><a class="brand" href="../"><img src="../favicon.svg" alt="">Pausa de bienestar</a><a href="../">Volver al inicio</a></header><main class="flow"><div class="topline"><h1>Mi pausa</h1><button id="history" class="secondary">Mi historial</button></div><p class="fine">Un momento para escucharte. Compartir lo que sientes siempre es opcional.</p><div id="app"></div><p id="notice" role="status" aria-live="polite"></p><noscript>Activa JavaScript para realizar tu pausa. El check-in original está disponible desde la portada.</noscript></main><footer class="fine">Las respuestas de Mi pausa no se envían a un servidor. Si eliges guardarlas, quedan en este navegador y pueden verse en un dispositivo compartido. Al borrar sus datos, se pierde el historial.</footer></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#49358c">
+  <meta name="description" content="Una pausa personal para reconocer tus emociones, explorar necesidades y elegir un paso posible. Con historial opcional en tu dispositivo.">
+  <title>Mi pausa · Bienestar cotidiano</title>
+  <link rel="icon" href="./pause.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./app.css?v=20260914-2">
+  <script type="module" src="./app.js?v=20260914-2"></script>
+</head>
+<body>
+  <a class="skip-link" href="#reflection">Ir a mi reflexión</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../"><img src="./pause.svg" width="38" height="38" alt=""><span><strong>Mi pausa</strong><small>Pausa de bienestar</small></span></a>
+      <nav aria-label="Navegación principal"><a href="../">Inicio</a><button class="quiet" id="open-guide">En clase</button><button class="outline" id="open-history">Mi historial</button></nav>
+    </div>
+  </header>
+  <main id="main-content">
+    <section class="intro" id="intro">
+      <div><p class="eyebrow">Bienestar cotidiano <span>·</span> A tu ritmo</p><h1 id="greeting">¿Cómo llegas hoy?</h1><p id="invitation">Escúchate antes de empezar. Elige qué podría ayudarte con lo que sigue.</p></div>
+      <fieldset class="moment-picker"><legend>El momento de tu pausa</legend><div id="moments"></div></fieldset>
+    </section>
+    <div class="workspace" id="workspace">
+      <section class="work-card" id="reflection" tabindex="-1" aria-label="Mi reflexión">
+        <div id="progress"></div>
+        <div id="screen"></div>
+        <p id="feedback" role="status" aria-live="polite" class="feedback"></p>
+      </section>
+      <aside id="companion" aria-label="Acompañamiento de mi pausa"></aside>
+    </div>
+    <section id="history-panel" class="history-panel" hidden aria-label="Mi historial"></section>
+    <section id="finished" class="finished" hidden></section>
+    <noscript><section class="work-card"><h2>También puedes hacer tu pausa sin pantalla</h2><p>¿Cómo me siento? ¿Qué puede estar influyendo? ¿Qué me ayudaría? ¿Qué paso puedo elegir?</p><p>Activa JavaScript para usar el recorrido y consultar tu historial.</p></section></noscript>
+  </main>
+  <footer>
+    <div><strong>Concepto y diseño pedagógico: Karen Ariadna Guzmán Vega</strong><br>Mentora Estudiantil · Herramienta de reflexión personal.</div>
+    <div class="footer-links"><button id="open-about" class="text-button">Sobre esta pausa y tus datos</button><a href="https://tqueremos.tec.mx/es" target="_blank" rel="noopener noreferrer">Recursos de bienestar <span aria-hidden="true">↗</span></a></div>
+  </footer>
+  <dialog id="info-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><span class="eyebrow">Mi pausa</span><button class="quiet" id="close-dialog" aria-label="Cerrar información">Cerrar <span aria-hidden="true">×</span></button></div><div id="dialog-content"></div></dialog>
+</body>
+</html>
