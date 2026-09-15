@@ -1,10 +1,10 @@
-import { dayKey, colorBands, emotionColors, monthCells, shiftMonth, inMonth } from './history.js?v=20260914-5';
-import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-5';
-import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-5';
+import { dayKey, colorBands, emotionColors, monthCells, shiftMonth, inMonth } from './history.js?v=20260914-6';
+import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-6';
+import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-6';
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-const newState = (moment = 'inicio') => ({ moment, step: 0, zone: '', allFeelings: false, emotions: [], ownEmotion: '', uncertainEmotion: false, reasons: [], reasonText: '', uncertainReason: false, dimension: '', need: '', ownNeed: '', uncertainNeed: false, action: '', ownAction: '', when: '', recognition: '', saveToHistory: false, savedId: '' });
+const newState = (moment = 'inicio') => ({ moment, step: 0, zone: '', allFeelings: false, emotions: [], ownEmotion: '', uncertainEmotion: false, reasons: [], reasonText: '', uncertainReason: false, dimension: '', need: '', ownNeed: '', uncertainNeed: false, action: '', ownAction: '', when: '', recognition: '', savedId: '' });
 let state = newState();
 let view = 'reflection';
 let historyReturn = 'reflection';
@@ -121,7 +121,7 @@ function summaryScreen() {
       ${r.recognition ? summaryRow('Me llevo de hoy', r.recognition, 2) : ''}
     </dl>
     <details class="expand"><summary>Si quiero expresarlo a alguien</summary><p>Puedes compartir solo tu necesidad. Tú eliges con quién, cómo y cuánto contar.</p><div class="bridge-note"><p>${r.need && !state.uncertainNeed ? `«Me ayudaría ${esc(needPhrase())}. ¿Podemos ver una opción posible?»` : '«Todavía estoy tratando de entender qué necesito. Me ayudaría tener un momento.»'}</p></div><p>Esta frase es un punto de partida: ajústala a tu forma de hablar. No se envía a nadie desde aquí.</p></details>
-    <div class="completion-options"><label class="save-choice"><input type="checkbox" id="saveToHistory" data-field="saveToHistory" ${state.saveToHistory ? 'checked' : ''} aria-describedby="save-choice-help"><span>Guardar en mi historial</span></label><p id="save-choice-help">Solo en este navegador. Puedes borrarla después.</p></div>
+    <p class="completion-note">Al terminar, tu pausa queda guardada en este navegador.</p>
     <div class="summary-end">${button('finish', 'Terminar pausa', 'primary')}</div>`;
 }
 function render({ focus = true, preserveScroll = false } = {}) {
@@ -157,7 +157,7 @@ function finish(passed = false) {
   $('finished').hidden = false;
   $('screen').replaceChildren();
   $('companion').replaceChildren();
-  $('finished').innerHTML = `<img class="pause-mark" src="./pause.svg" alt=""><p class="eyebrow">A tu ritmo</p><h1 tabindex="-1">${passed ? 'También está bien pasar.' : 'Llévate lo que te sirva.'}</h1><p>${passed ? 'Puedes volver cuando tenga sentido para ti. Participar no implica tener que nombrar o explicar lo que sientes.' : 'Un poco más de claridad, una necesidad reconocida o una acción posible. Eso puede ser suficiente por ahora.'}</p><p class="private-note">Las respuestas de esta sesión se han retirado de la pantalla.${saved ? ' La copia que elegiste guardar permanece en Mi historial.' : ' Esta pausa no se guardó.'}</p><div class="finished-actions">${button('restart', 'Hacer otra pausa', 'primary')}<a class="outline" href="../">Volver al inicio</a></div>`;
+  $('finished').innerHTML = `<img class="pause-mark" src="./pause.svg" alt=""><p class="eyebrow">A tu ritmo</p><h1 tabindex="-1">${passed ? 'También está bien pasar.' : 'Llévate lo que te sirva.'}</h1><p>${passed ? 'Puedes volver cuando tenga sentido para ti. Participar no implica tener que nombrar o explicar lo que sientes.' : 'Un poco más de claridad, una necesidad reconocida o una acción posible. Eso puede ser suficiente por ahora.'}</p><p class="private-note">Las respuestas de esta sesión se han retirado de la pantalla.${saved ? ' Tu pausa se guardó en Mi historial.' : ' Esta pausa no se guardó.'}</p><div class="finished-actions">${button('restart', 'Hacer otra pausa', 'primary')}<a class="outline" href="../">Volver al inicio</a></div>`;
   $('finished').querySelector('h1').focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
@@ -191,14 +191,14 @@ function historyView({ focus = true, message = '' } = {}) {
   historyRecords = historyMode === 'calendar' ? (selectedDay ? allRecords.filter(r => dayKey(r.date) === selectedDay).reverse() : inMonth(allRecords, historyMonth)) : allRecords;
   $('intro').hidden = true; $('workspace').hidden = true; $('finished').hidden = true;
   const panel = $('history-panel'); panel.hidden = false;
-  panel.innerHTML = `<div class="view-heading"><div><p class="eyebrow">Lo que has elegido guardar</p><h1 tabindex="-1">Mi historial</h1><p>Tus pausas, día a día.</p></div>${button('return', 'Volver a mi pausa', 'outline')}</div>
+  panel.innerHTML = `<div class="view-heading"><div><p class="eyebrow">Tus momentos registrados</p><h1 tabindex="-1">Mi historial</h1><p>Tus pausas, día a día.</p></div>${button('return', 'Volver a mi pausa', 'outline')}</div>
     <div class="history-view-picker" role="group" aria-label="Vista del historial">${button('history-mode', 'Calendario', 'chip', 'calendar', historyMode === 'calendar')}${button('history-mode', 'Lista', 'chip', 'list', historyMode === 'list')}</div>
     ${result.unavailable.length ? '<p class="warning">Hay datos que no se pudieron leer. Se conservan sin cambios. Borrar todo también eliminará esos datos.</p>' : ''}
     ${historyMode === 'calendar' ? calendarMarkup(allRecords) : ''}
     <div class="history-tools"><span>${selectedDay && historyMode === 'calendar' ? esc(dateName(selectedDay)) + ' · ' : ''}${historyRecords.length} ${historyRecords.length === 1 ? 'pausa' : 'pausas'}${historyMode === 'calendar' && !selectedDay ? ' este mes' : ''}</span>${selectedDay && historyMode === 'calendar' ? button('all-days', 'Ver todo el mes', 'text-button') : ''}${allRecords.length || result.unavailable.length ? button('clear-request', 'Borrar todo el historial', 'text-button danger') : ''}</div><div id="clear-confirm"></div><p id="history-status" class="toast" role="status" aria-live="polite">${esc(message)}</p>
     <div class="history-timeline">${historyRecords.length ? historyRecords.map((record, i) => `<article class="entry"><div class="entry-colors" aria-hidden="true">${bandsMarkup([record])}</div><time datetime="${esc(record.date)}">${esc(new Date(record.date).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }))}</time><span class="moment-label"> · ${esc(record.moment)}</span><h2>${esc(record.emotion || 'Sin una palabra todavía')}</h2><dl>${[
       ['Puede estar influyendo', record.reason], ['Lo relaciono con', record.dimension], ['Me ayudaría', record.need], ['Mi siguiente paso', record.action], ['Cuándo', record.when], ['Me llevo de hoy', record.recognition],
-    ].filter(([, value]) => value).map(([label, value]) => `<div${label === 'Mi siguiente paso' ? ' class="saved-action"' : ''}><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${button('delete-request', 'Borrar esta pausa', 'text-button danger', String(i))}<div id="delete-confirm-${i}"></div></article>`).join('') : `<div class="history-empty"><h2>${allRecords.length ? 'No hay pausas en este período.' : 'Aquí caben tus momentos.'}</h2><p>${allRecords.length ? 'Puedes explorar otro mes o ver todos tus registros en Lista.' : 'Antes de terminar una pausa, puedes elegir guardarla. El calendario se irá formando con tus propios registros.'}</p></div>`}</div><p class="private-note">Guardado en este navegador. No se sincroniza con el check-in de siete dimensiones.</p>`;
+    ].filter(([, value]) => value).map(([label, value]) => `<div${label === 'Mi siguiente paso' ? ' class="saved-action"' : ''}><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${button('delete-request', 'Borrar esta pausa', 'text-button danger', String(i))}<div id="delete-confirm-${i}"></div></article>`).join('') : `<div class="history-empty"><h2>${allRecords.length ? 'No hay pausas en este período.' : 'Aquí caben tus momentos.'}</h2><p>${allRecords.length ? 'Puedes explorar otro mes o ver todos tus registros en Lista.' : 'Tus pausas se guardan automáticamente al terminarlas. El calendario se irá formando con tus propios registros.'}</p></div>`}</div><p class="private-note">Guardado en este navegador. No se sincroniza con el check-in de siete dimensiones.</p>`;
   panel.querySelector('[data-action="month"][data-value="-1"]')?.setAttribute('aria-label', 'Mes anterior');
   panel.querySelector('[data-action="month"][data-value="1"]')?.setAttribute('aria-label', 'Mes siguiente');
   if (focus) { panel.querySelector('h1').focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }
@@ -209,7 +209,7 @@ function showDialog() {
   returnFocus = document.activeElement;
   $('dialog-content').innerHTML = `<h2 id="dialog-title">Sobre esta pausa y tus datos</h2>
     <h3>Una herramienta de reflexión</h3><p>Mi pausa acompaña el reconocimiento y la expresión de emociones, la exploración de posibles razones y la elección de una respuesta. La reflexión sobre necesidades forma parte de esta propuesta pedagógica.</p><p>Se inspira en las habilidades de RULER y en los ejes de energía y agrado del Mood Meter. No es una herramienta oficial de Yale ni equivale a implementar el programa completo. No es una evaluación ni un diagnóstico.</p><p><a href="https://rulerapproach.org/about/what-is-ruler/" target="_blank" rel="noopener noreferrer">Conocer el marco RULER ↗</a></p>
-    <h3>Tú decides qué guardar</h3><p>No se solicita nombre ni matrícula. Tus respuestas permanecen en la sesión, salvo que marques «Guardar en mi historial» y termines la pausa. Al terminar o recargar la página se retira la reflexión en curso; lo guardado permanece en este navegador.</p><p>Las respuestas no se envían a un servidor ni a tu docente. El alojamiento puede registrar datos técnicos de visita; eso no incluye los campos de tu reflexión.</p><p>Quien use este navegador podría ver el historial. Borrar los datos del navegador lo elimina; no se sincroniza entre dispositivos. Puedes borrar una pausa o todas desde Mi historial.</p><p>Se reconocen los formatos anteriores de Mi pausa en este mismo navegador y dirección. El historial de un archivo descargado, otro dominio o el check-in original no se transfiere automáticamente.</p>
+    <h3>Tu historial en este navegador</h3><p>No se solicita nombre ni matrícula. Tus respuestas permanecen en la sesión, hasta que pulses «Terminar pausa», que guarda automáticamente una copia en este navegador. Al terminar se cierra la reflexión; lo guardado permanece en este navegador. Si recargas antes de terminar, se pierde la reflexión en curso.</p><p>Las respuestas no se envían a un servidor ni a tu docente. El alojamiento puede registrar datos técnicos de visita; eso no incluye los campos de tu reflexión.</p><p>Quien use este navegador podría ver el historial. Borrar los datos del navegador lo elimina; no se sincroniza entre dispositivos. Puedes borrar una pausa o todas desde Mi historial.</p><p>Se reconocen los formatos anteriores de Mi pausa en este mismo navegador y dirección. El historial de un archivo descargado, otro dominio o el check-in original no se transfiere automáticamente.</p>
     <h3>Si necesitas acompañamiento</h3><p>Puedes acudir a una persona de confianza o a tu mentor o mentora. La pausa no sustituye ese acompañamiento.</p><a href="https://tqueremos.tec.mx/es" target="_blank" rel="noopener noreferrer">Consultar recursos de bienestar · TQueremos ↗</a>`;
   dialog.showModal();
   $('close-dialog').focus();
@@ -263,14 +263,12 @@ document.addEventListener('click', event => {
     case 'restart': state = newState(state.moment); render(); break;
     case 'finish': {
       if (view !== 'reflection' || state.step !== 3) return;
-      if (state.saveToHistory) {
-        try {
-          const saved = saveRecord(window.localStorage, recordNow(), crypto.randomUUID(), new Date().toISOString());
-          state.savedId = saved.id;
-        } catch {
-          setFeedback('No se pudo guardar. Tus respuestas siguen aquí. Intenta de nuevo o desmarca «Guardar en mi historial» para terminar sin guardar.', true);
-          return;
-        }
+      try {
+        const saved = saveRecord(window.localStorage, recordNow(), crypto.randomUUID(), new Date().toISOString());
+        state.savedId = saved.id;
+      } catch {
+        setFeedback('No se pudo guardar. Tus respuestas siguen aquí. Revisa que el navegador permita el almacenamiento y vuelve a intentar terminar la pausa.', true);
+        return;
       }
       finish();
       break;
@@ -303,7 +301,6 @@ document.addEventListener('click', event => {
 function handleField(event) {
   const key = event.target.dataset.field;
   if (!key || !(key in state)) return;
-  if (key === 'saveToHistory') { state.saveToHistory = event.target.checked; setFeedback(''); return; }
   state[key] = event.target.value;
   if (key === 'ownEmotion' && state.ownEmotion.trim()) {
     state.uncertainEmotion = false;

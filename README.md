@@ -18,7 +18,7 @@ Portada común y Mi pausa, publicadas en GitHub Pages.
 
 ## Datos
 
-El resumen tiene un único botón principal: «Terminar pausa». La casilla «Guardar en mi historial», desmarcada inicialmente, permite guardar y terminar en la misma acción. Si el guardado falla, el formulario permanece abierto con las respuestas intactas. No se envían respuestas a un servidor. Al terminar se limpia la reflexión en memoria y en la pantalla. No hay cuentas ni sincronización.
+El resumen tiene un único botón principal: «Terminar pausa». Ese botón guarda automáticamente y termina la pausa, sin una elección adicional. Si el guardado falla, el formulario permanece abierto con las respuestas intactas. No se envían respuestas a un servidor. Al terminar se limpia la reflexión en memoria y en la pantalla. No hay cuentas ni sincronización.
 
 Las nuevas pausas se guardan en `mi-pausa.history.v2`. Se leen también `mi-pausa.history.v1` (prototipo ChatGPT) y `mi-pausa-history-v1` (primera publicación). Leer un formato anterior no lo modifica. Borrar una pausa afecta solo a su origen; borrar todo elimina únicamente las tres claves de Mi pausa.
 
