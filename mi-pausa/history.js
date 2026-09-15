@@ -1,4 +1,4 @@
-import { zones } from './data.js?v=20260914-3';
+import { zones } from './data.js?v=20260914-4';
 export const emotionColors = { red: '#b54965', yellow: '#d5a72b', blue: '#668dc1', green: '#439272', neutral: '#847c94' };
 const vocabulary = new Map(zones.flatMap(zone => zone.feelings.map(([word]) => [word.toLocaleLowerCase('es'), zone.id])));
 export function dayKey(date) {

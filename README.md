@@ -14,7 +14,7 @@ Portada común y Mi pausa, publicadas en GitHub Pages.
 - Posibles razones y relación opcional con una dimensión, sin volver a puntuarla.
 - Necesidad elegida por la persona, sugerencias de acciones, redacción propia y momento opcional para actuar.
 - Inicio, durante el día y cierre; el cierre permite reconocer qué ayudó o qué esfuerzo se quiere valorar.
-- Guía para facilitar la pausa en clase, expresión voluntaria de una necesidad, atribución pedagógica y límites de la herramienta.
+- Expresión voluntaria de una necesidad, atribución pedagógica y límites de la herramienta. La interfaz está dirigida al estudiante.
 
 ## Datos
 

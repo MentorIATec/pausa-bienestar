@@ -1,6 +1,6 @@
-import { dayKey, colorBands, emotionColors, monthCells, shiftMonth, inMonth } from './history.js?v=20260914-3';
-import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-3';
-import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-3';
+import { dayKey, colorBands, emotionColors, monthCells, shiftMonth, inMonth } from './history.js?v=20260914-4';
+import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-4';
+import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-4';
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -58,7 +58,7 @@ function updateCompanion() {
     ['Puede estar influyendo', r.reason, 'No hace falta saber por qué.'],
     ['Me ayudaría', r.need, 'Lo que tenga sentido para ti.'],
     ['Puedo', r.action, 'Un paso pequeño y posible.'],
-  ].map(([label, value, empty]) => `<div><dt>${label}</dt><dd${value ? '' : ' class="placeholder"'}>${esc(value || empty)}</dd></div>`).join('')}</dl></section><div class="companion-bottom"><div class="helper-rule"></div><strong>Tu emoción no es una calificación.</strong>La pausa puede servirte aunque sigas sintiendo lo mismo. No tienes que cambiar de zona ni explicar algo personal.${button('guide', 'Si hacemos la pausa en clase', 'text-button')}</div>`;
+  ].map(([label, value, empty]) => `<div><dt>${label}</dt><dd${value ? '' : ' class="placeholder"'}>${esc(value || empty)}</dd></div>`).join('')}</dl></section><div class="companion-bottom"><div class="helper-rule"></div><strong>Tu emoción no es una calificación.</strong>La pausa puede servirte aunque sigas sintiendo lo mismo. No tienes que cambiar de zona ni explicar algo personal.</div>`;
 }
 function updateHeader() {
   $('greeting').textContent = moments[state.moment].title;
@@ -205,13 +205,10 @@ function historyView({ focus = true, message = '' } = {}) {
   if (focus) { panel.querySelector('h1').focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }
   else if (oldAction) [...panel.querySelectorAll('[data-action]')].find(el => el.dataset.action === oldAction && el.dataset.value === oldValue)?.focus({ preventScroll: true });
 }
-function showDialog(kind) {
+function showDialog() {
   const dialog = $('info-dialog');
   returnFocus = document.activeElement;
-  $('dialog-content').innerHTML = kind === 'guide' ? `<h2 id="dialog-title">Una pausa que sí cabe en clase</h2><p>Invita a participar sin calificar, comparar colores ni pedir explicaciones personales. El grupo puede pasar esta vez.</p>
-    <ol><li><strong>Ofrece un momento individual.</strong> Da 1–2 minutos para reconocer una emoción y una necesidad. Puedes modelar algo breve: «Llego con nervios; me ayudaría ordenar el primer paso».</li><li><strong>Invita a compartir solo lo necesario.</strong> Por ejemplo: «Me ayudaría ver un ejemplo». Compartir una emoción o una razón es voluntario.</li><li><strong>Responde con un ajuste posible.</strong> Aclara una consigna, ofrece un breve descanso o acuerda una conversación. Si no puedes atender algo ahora, reconócelo y explica qué sí es posible.</li></ol>
-    <div class="guide-callout"><p><strong>Al cerrar:</strong> pregunta qué ayudó, qué aprendieron de sí o qué quieren cuidar. No hace falta que la emoción haya cambiado.</p></div>
-    <h3>Cómo valorar si está ayudando</h3><p>Observa si facilita poner palabras a la experiencia, pedir un apoyo concreto o elegir un paso realista. Estas son preguntas para un pilotaje, no resultados demostrados de la herramienta.</p><p>Evita convertirla en un requisito para participar o pedir capturas del historial. La herramienta no envía respuestas a la persona docente.</p>` : `<h2 id="dialog-title">Sobre esta pausa y tus datos</h2>
+  $('dialog-content').innerHTML = `<h2 id="dialog-title">Sobre esta pausa y tus datos</h2>
     <h3>Una herramienta de reflexión</h3><p>Mi pausa acompaña el reconocimiento y la expresión de emociones, la exploración de posibles razones y la elección de una respuesta. La reflexión sobre necesidades forma parte de esta propuesta pedagógica.</p><p>Se inspira en las habilidades de RULER y en los ejes de energía y agrado del Mood Meter. No es una herramienta oficial de Yale ni equivale a implementar el programa completo. No es una evaluación ni un diagnóstico.</p><p><a href="https://rulerapproach.org/about/what-is-ruler/" target="_blank" rel="noopener noreferrer">Conocer el marco RULER ↗</a></p>
     <h3>Tú decides qué guardar</h3><p>No se solicita nombre ni matrícula. Tus respuestas permanecen en la sesión, salvo que elijas guardar una copia. Al terminar o recargar la página se retira la reflexión en curso; lo guardado permanece en este navegador.</p><p>Las respuestas no se envían a un servidor ni a tu docente. El alojamiento puede registrar datos técnicos de visita; eso no incluye los campos de tu reflexión.</p><p>Quien use este navegador podría ver el historial. Borrar los datos del navegador lo elimina; no se sincroniza entre dispositivos. Puedes borrar una pausa o todas desde Mi historial.</p><p>Se reconocen los formatos anteriores de Mi pausa en este mismo navegador y dirección. El historial de un archivo descargado, otro dominio o el check-in original no se transfiere automáticamente.</p>
     <h3>Si necesitas acompañamiento</h3><p>Puedes acudir a una persona de confianza o a tu mentor o mentora. La pausa no sustituye ese acompañamiento.</p><a href="https://tqueremos.tec.mx/es" target="_blank" rel="noopener noreferrer">Consultar recursos de bienestar · TQueremos ↗</a>`;
@@ -266,7 +263,6 @@ document.addEventListener('click', event => {
     case 'pass': finish(true); break;
     case 'finish': finish(); break;
     case 'restart': state = newState(state.moment); render(); break;
-    case 'guide': showDialog('guide'); break;
     case 'save': {
       const record = recordNow();
       if (state.savedSignature === JSON.stringify(record)) return;
@@ -339,8 +335,7 @@ function handleField(event) {
 $('screen').addEventListener('input', handleField);
 $('screen').addEventListener('change', event => { if (event.target.tagName === 'SELECT') handleField(event); });
 $('open-history').addEventListener('click', () => historyView());
-$('open-guide').addEventListener('click', () => showDialog('guide'));
-$('open-about').addEventListener('click', () => showDialog('about'));
+$('open-about').addEventListener('click', () => showDialog());
 $('close-dialog').addEventListener('click', () => $('info-dialog').close());
 $('info-dialog').addEventListener('close', () => returnFocus?.focus());
 render({ focus: false });
