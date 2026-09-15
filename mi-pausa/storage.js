@@ -7,6 +7,8 @@ export function normalize(row, source) {
   return {
     id: row.id, date: row.date, source,
     moment: text(row.moment),
+    emotionWords: Array.isArray(row.emotionWords) ? row.emotionWords.filter(word => typeof word === "string") : null,
+    ownEmotionText: text(row.ownEmotionText),
     emotion: legacyPublished ? text(row.ownEmotion).trim() || text(row.emotion) : text(row.emotion),
     reason: legacyPublished ? [text(row.reason), text(row.detail)].filter(Boolean).join(' · ') : text(row.reason),
     need: legacyPublished ? text(row.ownNeed).trim() || text(row.need) : text(row.need),

@@ -37,3 +37,9 @@ GitHub Pages sirve la rama `main`, carpeta raíz. No hay compilación ni depende
 Pruebas: `npm test` (Node.js). Desarrollo: servir esta carpeta con un servidor HTTP estático.
 
 La revisión heurística y las pruebas funcionales no sustituyen un pilotaje con estudiantes ni una auditoría completa de accesibilidad.
+
+## Historial visual
+
+Mi historial ofrece Calendario y Lista. El calendario mensual agrupa registros por fecha local; cada casilla conserva las zonas presentes sin promediar las emociones. Seleccionar un día muestra las pausas desde la primera hasta la última. Las palabras propias o no reconocidas usan una categoría neutral. Los registros nuevos conservan las palabras elegidas separadas del texto libre; para los anteriores se reconocen solo coincidencias exactas con el vocabulario. No se calculan rachas, puntuaciones ni mejoras emocionales.
+
+Pruebas adicionales en `tests/history.test.mjs`: calendario, años bisiestos, cambio de año, fechas locales, mezcla de colores y tratamiento de palabras propias.

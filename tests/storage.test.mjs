@@ -37,3 +37,7 @@ test('blocked/quota-exceeded writes report failure', () => {
   const s = store(); s.setItem = () => { throw Error('QuotaExceededError'); }; assert.throws(() => saveRecord(s, record, 'one', day)); assert.equal(loadHistory(s).records.length, 0);
 });
 test('invalid dates never reach history formatting', () => { const s = store({ [HISTORY_KEY]: JSON.stringify([{ id: 'bad', date: 'not a date' }]) }); assert.deepEqual(loadHistory(s).unavailable, [HISTORY_KEY]); });
+test('retains selected emotion words separately from free text for visual history',()=>{
+  const s=store();saveRecord(s,{...record,emotionWords:['Calma','Nervios'],ownEmotionText:'Una mezcla propia'},'visual',day);
+  const saved=loadHistory(s).records[0];assert.deepEqual(saved.emotionWords,['Calma','Nervios']);assert.equal(saved.ownEmotionText,'Una mezcla propia');
+});

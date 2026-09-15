@@ -1,5 +1,6 @@
-import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-2';
-import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-2';
+import { dayKey, colorBands, emotionColors, monthCells, shiftMonth, inMonth } from './history.js?v=20260914-3';
+import { zones, definitions, reasons, needs, dimensions, moments } from './data.js?v=20260914-3';
+import { HISTORY_KEY, loadHistory, saveRecord, deleteRecord, clearHistory } from './storage.js?v=20260914-3';
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -8,6 +9,10 @@ let state = newState();
 let view = 'reflection';
 let historyReturn = 'reflection';
 let historyRecords = [];
+let historyMode = 'calendar';
+let historyMonth = dayKey(new Date()).slice(0, 7);
+let selectedDay = '';
+const dateName = key => new Date(key + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 let returnFocus = null;
 
 function button(action, label, classes = 'chip', value = '', pressed = null) {
@@ -18,6 +23,8 @@ function needPhrase() { return needPhrases[state.need] || state.ownNeed.trim() |
 function recordNow() {
   return {
     moment: moments[state.moment].label,
+    emotionWords: [...state.emotions],
+    ownEmotionText: state.ownEmotion.trim(),
     emotion: state.uncertainEmotion ? 'No lo tengo claro todavía' : [...state.emotions, state.ownEmotion.trim()].filter(Boolean).join(' · '),
     reason: state.uncertainReason ? 'No lo tengo claro todavía' : [...state.reasons, state.reasonText.trim()].filter(Boolean).join(' · '),
     dimension: state.dimension,
@@ -115,7 +122,7 @@ function summaryScreen() {
       ${r.recognition ? summaryRow('Me llevo de hoy', r.recognition, 2) : ''}
     </dl>
     <details class="expand"><summary>Si quiero expresarlo a alguien</summary><p>Puedes compartir solo tu necesidad. Tú eliges con quién, cómo y cuánto contar.</p><div class="bridge-note"><p>${r.need && !state.uncertainNeed ? `«Me ayudaría ${esc(needPhrase())}. ¿Podemos ver una opción posible?»` : '«Todavía estoy tratando de entender qué necesito. Me ayudaría tener un momento.»'}</p></div><p>Esta frase es un punto de partida: ajústala a tu forma de hablar. No se envía a nadie desde aquí.</p></details>
-    <section class="saving" aria-label="Guardar mi pausa"><h3>¿Quieres volver a leerla?</h3><p>Guardar es opcional. La copia queda en este navegador; quien use este dispositivo podría verla. Evita guardarla en un equipo compartido.</p><button type="button" class="outline" data-action="save" ${isSaved ? 'disabled' : ''}>${isSaved ? 'Pausa guardada en este dispositivo' : 'Guardar en este dispositivo'}</button><p class="save-result" id="save-result" role="status" aria-live="polite">${isSaved ? 'Disponible en Mi historial.' : 'Todavía no se ha guardado esta versión.'}</p></section>
+    <section class="saving" aria-label="Guardar mi pausa"><h3>¿Quieres volver a leerla?</h3><p>Se guarda en este navegador. Puedes borrarla desde Mi historial.</p><button type="button" class="outline" data-action="save" ${isSaved ? 'disabled' : ''}>${isSaved ? 'Pausa guardada en este dispositivo' : 'Guardar en este dispositivo'}</button><p class="save-result" id="save-result" role="status" aria-live="polite">${isSaved ? 'Disponible en Mi historial.' : 'Todavía no se ha guardado esta versión.'}</p></section>
     <div class="summary-end">${button('go-step', 'Revisar mi siguiente paso', 'text-button', '2')}${button('finish', 'Terminar mi pausa', 'primary')}</div>`;
 }
 function render({ focus = true, preserveScroll = false } = {}) {
@@ -159,25 +166,44 @@ function safeHistory() {
   try { return loadHistory(window.localStorage); }
   catch { return { records: [], unavailable: ['storage'] }; }
 }
+function bandsMarkup(records) {
+  return colorBands(records).map(color => `<span style="background:${emotionColors[color]}" aria-hidden="true"></span>`).join('');
+}
+function calendarMarkup(records) {
+  const monthRecords = inMonth(records, historyMonth);
+  const days = new Set(monthRecords.map(r => dayKey(r.date)));
+  const monthName = new Date(historyMonth + '-01T12:00:00').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+  const byDay = new Map([...days].map(day => [day, monthRecords.filter(r => dayKey(r.date) === day)]));
+  return `<section class="calendar" aria-label="Calendario de emociones"><div class="calendar-top"><div><h2 id="calendar-month" aria-live="polite">${esc(monthName)}</h2><p>${monthRecords.length} ${monthRecords.length === 1 ? 'pausa' : 'pausas'} · ${days.size} ${days.size === 1 ? 'día con registros' : 'días con registros'}</p></div><div class="month-nav">${button('month', '‹', 'outline', '-1')}${button('month-today', 'Hoy', 'quiet')}${button('month', '›', 'outline', '1')}</div></div>
+    <div class="weekdays" aria-hidden="true">${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => `<span>${day}</span>`).join('')}</div><div class="calendar-grid" aria-labelledby="calendar-month">${monthCells(historyMonth).map(day => {
+      if (!day) return '<span class="calendar-spacer" aria-hidden="true"></span>';
+      const entries = byDay.get(day) || [];
+      return `<button type="button" class="calendar-day ${entries.length ? 'has-records' : ''}" data-action="day" data-value="${day}" aria-pressed="${selectedDay === day}" aria-label="${esc(dateName(day))}: ${entries.length ? `${entries.length} ${entries.length === 1 ? 'pausa' : 'pausas'}. ${entries.map(r => r.emotion).join('; ')}` : 'Sin pausas guardadas'}" ${day === dayKey(new Date()) ? 'aria-current="date"' : ''}><span class="day-number">${Number(day.slice(-2))}</span><span class="day-bands">${bandsMarkup(entries)}</span><small>${entries.length || '<span aria-hidden="true">—</span>'}</small></button>`;
+    }).join('')}</div><div class="calendar-legend">${[['red', 'Más energía · desagradable'], ['yellow', 'Más energía · agradable'], ['blue', 'Menos energía · desagradable'], ['green', 'Menos energía · agradable'], ['neutral', 'Palabras propias o sin clasificar']].map(([color, label]) => `<span><i style="background:${emotionColors[color]}" aria-hidden="true"></i>${label}</span>`).join('')}</div><p class="calendar-help">Cada casilla reúne las emociones de ese día. Tócala para ver cada pausa en orden. Un día sin registros solo significa que no guardaste una pausa.</p><details class="calendar-explanation"><summary>Cómo leer los colores</summary><p>Las franjas muestran las zonas de las palabras elegidas, sin promediarlas ni decidir cuál fue tu emoción principal. Una mezcla conserva sus colores. Los textos propios y las emociones no reconocidas se muestran en gris.</p><p>En registros anteriores, el color se reconstruye únicamente cuando la palabra coincide con el vocabulario del mapa. Los colores describen lo registrado; no indican progreso ni mejoría.</p></details></section>`;
+}
 function historyView({ focus = true, message = '' } = {}) {
+  const active = document.activeElement;
+  const oldAction = active?.dataset.action, oldValue = active?.dataset.value;
   if (view !== 'history') historyReturn = view;
   view = 'history';
   document.querySelector('.skip-link').hidden = true;
   const result = safeHistory();
-  historyRecords = result.records;
-  $('intro').hidden = true;
-  $('workspace').hidden = true;
-  $('finished').hidden = true;
-  const panel = $('history-panel');
-  panel.hidden = false;
-  panel.innerHTML = `<div class="view-heading"><div><p class="eyebrow">Lo que has elegido guardar</p><h1 tabindex="-1">Mi historial</h1><p>Una colección de momentos, no una evaluación de tu bienestar.</p></div>${button('return', 'Volver a mi pausa', 'outline')}</div>
-    <p class="private-note">Solo en este navegador. No se envía a tu docente ni se sincroniza con el check-in de siete dimensiones.</p>
-    ${result.unavailable.length ? '<p class="warning">Hay datos del historial que no se pudieron leer. Se conservan sin cambios. Puedes consultar los registros disponibles; si borras todo el historial también se eliminarán los datos que ahora no se pueden mostrar.</p>' : ''}
-    <div class="history-tools"><span>${historyRecords.length} ${historyRecords.length === 1 ? 'pausa guardada' : 'pausas guardadas'}</span>${historyRecords.length || result.unavailable.length ? button('clear-request', 'Borrar todo el historial', 'text-button danger') : ''}</div><div id="clear-confirm"></div><p id="history-status" class="toast" role="status" aria-live="polite">${esc(message)}</p>
-    ${historyRecords.length ? historyRecords.map((record, i) => `<article class="entry"><time datetime="${esc(record.date)}">${esc(new Date(record.date).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }))}</time><span class="moment-label"> · ${esc(record.moment)}</span><h2>${esc(record.emotion || 'Sin una palabra todavía')}</h2><dl>${[
+  const allRecords = result.records;
+  historyRecords = historyMode === 'calendar' ? (selectedDay ? allRecords.filter(r => dayKey(r.date) === selectedDay).reverse() : inMonth(allRecords, historyMonth)) : allRecords;
+  $('intro').hidden = true; $('workspace').hidden = true; $('finished').hidden = true;
+  const panel = $('history-panel'); panel.hidden = false;
+  panel.innerHTML = `<div class="view-heading"><div><p class="eyebrow">Lo que has elegido guardar</p><h1 tabindex="-1">Mi historial</h1><p>Tus pausas, día a día.</p></div>${button('return', 'Volver a mi pausa', 'outline')}</div>
+    <div class="history-view-picker" role="group" aria-label="Vista del historial">${button('history-mode', 'Calendario', 'chip', 'calendar', historyMode === 'calendar')}${button('history-mode', 'Lista', 'chip', 'list', historyMode === 'list')}</div>
+    ${result.unavailable.length ? '<p class="warning">Hay datos que no se pudieron leer. Se conservan sin cambios. Borrar todo también eliminará esos datos.</p>' : ''}
+    ${historyMode === 'calendar' ? calendarMarkup(allRecords) : ''}
+    <div class="history-tools"><span>${selectedDay && historyMode === 'calendar' ? esc(dateName(selectedDay)) + ' · ' : ''}${historyRecords.length} ${historyRecords.length === 1 ? 'pausa' : 'pausas'}${historyMode === 'calendar' && !selectedDay ? ' este mes' : ''}</span>${selectedDay && historyMode === 'calendar' ? button('all-days', 'Ver todo el mes', 'text-button') : ''}${allRecords.length || result.unavailable.length ? button('clear-request', 'Borrar todo el historial', 'text-button danger') : ''}</div><div id="clear-confirm"></div><p id="history-status" class="toast" role="status" aria-live="polite">${esc(message)}</p>
+    <div class="history-timeline">${historyRecords.length ? historyRecords.map((record, i) => `<article class="entry"><div class="entry-colors" aria-hidden="true">${bandsMarkup([record])}</div><time datetime="${esc(record.date)}">${esc(new Date(record.date).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }))}</time><span class="moment-label"> · ${esc(record.moment)}</span><h2>${esc(record.emotion || 'Sin una palabra todavía')}</h2><dl>${[
       ['Puede estar influyendo', record.reason], ['Lo relaciono con', record.dimension], ['Me ayudaría', record.need], ['Mi siguiente paso', record.action], ['Cuándo', record.when], ['Me llevo de hoy', record.recognition],
-    ].filter(([, value]) => value).map(([label, value]) => `<div${label === 'Mi siguiente paso' ? ' class="saved-action"' : ''}><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${button('delete-request', 'Borrar esta pausa', 'text-button danger', String(i))}<div id="delete-confirm-${i}"></div></article>`).join('') : '<div class="history-empty"><h2>Aquí caben tus momentos.</h2><p>Aún no hay pausas guardadas para mostrar. Al terminar una, puedes elegir «Guardar en este dispositivo».</p><p>También puedes usar Mi pausa sin guardar nada.</p></div>'}`;
+    ].filter(([, value]) => value).map(([label, value]) => `<div${label === 'Mi siguiente paso' ? ' class="saved-action"' : ''}><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${button('delete-request', 'Borrar esta pausa', 'text-button danger', String(i))}<div id="delete-confirm-${i}"></div></article>`).join('') : `<div class="history-empty"><h2>${allRecords.length ? 'No hay pausas en este período.' : 'Aquí caben tus momentos.'}</h2><p>${allRecords.length ? 'Puedes explorar otro mes o ver todos tus registros en Lista.' : 'Al terminar una pausa, puedes elegir guardarla. El calendario se irá formando con tus propios registros.'}</p></div>`}</div><p class="private-note">Guardado en este navegador. No se sincroniza con el check-in de siete dimensiones.</p>`;
+  panel.querySelector('[data-action="month"][data-value="-1"]')?.setAttribute('aria-label', 'Mes anterior');
+  panel.querySelector('[data-action="month"][data-value="1"]')?.setAttribute('aria-label', 'Mes siguiente');
   if (focus) { panel.querySelector('h1').focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  else if (oldAction) [...panel.querySelectorAll('[data-action]')].find(el => el.dataset.action === oldAction && el.dataset.value === oldValue)?.focus({ preventScroll: true });
 }
 function showDialog(kind) {
   const dialog = $('info-dialog');
@@ -207,6 +233,11 @@ document.addEventListener('click', event => {
   if (!target) return;
   const { action, value } = target.dataset;
   switch (action) {
+    case 'history-mode': historyMode = value; historyView({ focus: false }); break;
+    case 'month': historyMonth = shiftMonth(historyMonth, Number(value)); selectedDay = ''; historyView({ focus: false }); break;
+    case 'month-today': historyMonth = dayKey(new Date()).slice(0, 7); selectedDay = dayKey(new Date()); historyView({ focus: false }); break;
+    case 'day': selectedDay = selectedDay === value ? '' : value; historyView({ focus: false, message: selectedDay ? 'Pausas del día en orden, de la primera a la última.' : 'Mostrando el mes completo.' }); break;
+    case 'all-days': selectedDay = ''; historyView({ focus: false }); break;
     case 'moment': state.moment = value; render({ focus: false }); break;
     case 'zone': state.zone = value; state.allFeelings = false; render({ focus: false }); break;
     case 'all-feelings': state.allFeelings = !state.allFeelings; render({ focus: false }); break;
