@@ -98,7 +98,7 @@ function renderActionOptions() {
   return actionSuggestions().map(action => button('action', esc(action), 'chip', action, state.action === action)).join('');
 }
 function needScreen() {
-  return `<h2 tabindex="-1">${moments[state.moment].need}</h2><p class="screen-intro">Una misma emoción puede acompañarse de necesidades distintas. Elige lo que tenga sentido para ti.</p>
+  return `<h2 tabindex="-1">${moments[state.moment].need}</h2><p class="screen-intro">No siempre hay algo que resolver. Puedes elegir algo que te ayudaría, reconocer un avance o simplemente mantener lo que ya te está funcionando.</p>
     <div class="need-grid" role="group" aria-label="Lo que me ayudaría">${needs.map(need => button('need', `${esc(need.name)}<small>${esc(need.hint)}</small>`, 'chip', need.name, state.need === need.name)).join('')}</div>
     <div class="choice-footer">${button('uncertain-need', 'Todavía no sé', 'unknown', '', state.uncertainNeed)}</div>
     ${field('ownNeed', 'Otra necesidad', state.ownNeed, 120, 'Me ayudaría…')}
@@ -115,7 +115,7 @@ function summaryRow(label, value, step) {
 }
 function summaryScreen() {
   const r = recordNow();
-  return `<h2 tabindex="-1">Esto reconozco ahora</h2><p class="screen-intro">${esc(r.moment)}. No necesitas sentirte diferente para llevarte algo de esta pausa.</p>
+  return `<h2 tabindex="-1">Esto reconozco ahora</h2><p class="screen-intro">${esc(r.moment)}. Puede haber algo que quieras atender, algo que quieras mantener o simplemente la confirmación de que hoy estás bien. No necesitas sentirte diferente para llevarte algo de esta pausa.</p>
     <dl class="summary-list">${summaryRow('Cómo me siento', r.emotion, 0)}${r.reason || r.dimension ? summaryRow('Puede estar influyendo', [r.reason, r.dimension ? `Lo relaciono con: ${r.dimension}` : ''].filter(Boolean).join('\n'), 1) : ''}${summaryRow('Me ayudaría', r.need, 2)}
       <div class="action-summary"><dt>Mi siguiente paso</dt><dd>${esc(r.action || 'Todavía no elijo una acción.')}</dd>${r.when ? `<p>${esc(r.when)}</p>` : ''}</div>
       ${r.recognition ? summaryRow('Me llevo de hoy', r.recognition, 2) : ''}
@@ -157,7 +157,7 @@ function finish(passed = false) {
   $('finished').hidden = false;
   $('screen').replaceChildren();
   $('companion').replaceChildren();
-  $('finished').innerHTML = `<img class="pause-mark" src="./pause.svg" alt=""><p class="eyebrow">A tu ritmo</p><h1 tabindex="-1">${passed ? 'También está bien pasar.' : 'Llévate lo que te sirva.'}</h1><p>${passed ? 'Puedes volver cuando tenga sentido para ti. Participar no implica tener que nombrar o explicar lo que sientes.' : 'Un poco más de claridad, una necesidad reconocida o una acción posible. Eso puede ser suficiente por ahora.'}</p><p class="private-note">Las respuestas de esta sesión se han retirado de la pantalla.${saved ? ' Tu pausa se guardó en Mi historial.' : ' Esta pausa no se guardó.'}</p><div class="finished-actions">${button('restart', 'Hacer otra pausa', 'primary')}<a class="outline" href="../">Volver al inicio</a></div>`;
+  $('finished').innerHTML = `<img class="pause-mark" src="./pause.svg" alt=""><p class="eyebrow">A tu ritmo</p><h1 tabindex="-1">${passed ? 'También está bien pasar.' : 'Llévate lo que te sirva.'}</h1><p>${passed ? 'Puedes volver cuando tenga sentido para ti. Participar no implica tener que nombrar o explicar lo que sientes.' : 'Un poco más de claridad, una necesidad reconocida, un avance o confirmar que algo está funcionando bien. Eso puede ser suficiente por ahora.'}</p><p class="private-note">Las respuestas de esta sesión se han retirado de la pantalla.${saved ? ' Tu pausa se guardó en Mi historial.' : ' Esta pausa no se guardó.'}</p><div class="finished-actions">${button('restart', 'Hacer otra pausa', 'primary')}<a class="outline" href="../">Volver al inicio</a></div>`;
   $('finished').querySelector('h1').focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
