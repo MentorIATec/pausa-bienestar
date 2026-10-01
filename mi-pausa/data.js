@@ -38,7 +38,7 @@ export const needs = [
 ];
 export const dimensions = ['Física', 'Emocional', 'Intelectual', 'Ocupacional', 'Social', 'Espiritual / sentido', 'Financiera'];
 export const moments = {
-  inicio: { label: 'Al comenzar', title: '¿Cómo llegas hoy?', description: 'Escúchate antes de empezar. Elige qué podría ayudarte con lo que sigue.', reason: '¿Qué puede estar influyendo?', need: '¿Qué te ayudaría para comenzar?' },
-  durante: { label: 'Durante el día', title: '¿Cómo estás ahora?', description: 'Haz espacio entre lo que pasó y lo que sigue. No necesitas resolverlo todo.', reason: '¿Qué sigue contigo de lo que ha pasado?', need: '¿Qué te ayudaría para continuar?' },
-  cierre: { label: 'Al cerrar', title: '¿Cómo te vas hoy?', description: 'Reconoce lo que viviste, lo que te ayudó y qué quieres cuidar al cerrar.', reason: '¿Qué experiencia del día sigue contigo?', need: '¿Qué te ayudaría al cerrar?' },
+  inicio: { label: 'Al comenzar', title: '¿Cómo llegas hoy?', description: 'Escúchate antes de empezar. Puede haber algo que quieras cuidar o simplemente algo que está bien y quieres mantener.', reason: '¿Qué puede estar influyendo?', need: '¿Qué te ayudaría o qué te gustaría mantener?' },
+  durante: { label: 'Durante el día', title: '¿Cómo estás ahora?', description: 'Haz espacio entre lo que pasó y lo que sigue. No necesitas encontrar un problema ni resolver algo para que esta pausa tenga sentido.', reason: '¿Qué sigue contigo de lo que ha pasado?', need: '¿Qué te ayudaría o qué quieres seguir haciendo?' },
+  cierre: { label: 'Al cerrar', title: '¿Cómo te vas hoy?', description: 'Reconoce lo que viviste, lo que salió bien y, si hace falta, qué quieres cuidar al cerrar.', reason: '¿Qué experiencia del día sigue contigo?', need: '¿Qué quieres cuidar o mantener al cerrar?' },
 };
